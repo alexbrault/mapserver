@@ -318,6 +318,7 @@ if(BUILD_STATIC)
   set_target_properties( mapserver_static PROPERTIES
     VERSION ${MapServer_VERSION_STRING}
     SOVERSION 2
+    POSITION_INDEPENDENT_CODE ON
   ) 
 endif(BUILD_STATIC)
 
