@@ -2300,6 +2300,7 @@ void msPopulateTextSymbolForLabelAndString(textSymbolObj *ts, labelObj *l, char 
   MS_DLL_EXPORT int msCopyHashTable(hashTableObj *dst, hashTableObj *src);
   MS_DLL_EXPORT void msInitSymbolSet(symbolSetObj *symbolset);
   MS_DLL_EXPORT symbolObj *msGrowSymbolSet( symbolSetObj *symbolset );
+  MS_DLL_EXPORT int msGrowSymbol( symbolObj *symbol );
   MS_DLL_EXPORT int msAddImageSymbol(symbolSetObj *symbolset, char *filename);
   MS_DLL_EXPORT int msFreeSymbolSet(symbolSetObj *symbolset);
   MS_DLL_EXPORT int msFreeSymbol(symbolObj *symbol);

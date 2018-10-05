@@ -213,6 +213,8 @@ PHP_METHOD(symbolObj, setPoints)
 
   }
 
+  php_symbol->symbol->numpoints = 0;
+
   for(zend_hash_internal_pointer_reset(points_hash);
       zend_hash_has_more_elements(points_hash) == SUCCESS;
       zend_hash_move_forward(points_hash)) {
@@ -222,17 +224,21 @@ PHP_METHOD(symbolObj, setPoints)
       convert_to_double(*ppzval);
 
     if (!flag) {
+      if (msGrowSymbol(php_symbol->symbol) == MS_FAILURE) {
+        mapscript_report_php_error(E_ERROR,
+                                   "symbol->setpoints : unable to allocate memory for points array" TSRMLS_CC);
+        RETURN_LONG(MS_FAILURE);
+      }
       php_symbol->symbol->points[index].x = Z_DVAL_PP(ppzval);
       php_symbol->symbol->sizex = MS_MAX(php_symbol->symbol->sizex, php_symbol->symbol->points[index].x);
     } else {
       php_symbol->symbol->points[index].y = Z_DVAL_PP(ppzval);
       php_symbol->symbol->sizey = MS_MAX(php_symbol->symbol->sizey, php_symbol->symbol->points[index].y);
       index++;
+      php_symbol->symbol->numpoints++;
     }
     flag = !flag;
   }
-
-  php_symbol->symbol->numpoints = (numelements/2);
 
   RETURN_LONG(MS_SUCCESS);
 }

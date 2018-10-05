@@ -36,7 +36,8 @@
 enum MS_SYMBOL_TYPE {MS_SYMBOL_SIMPLE=1000, MS_SYMBOL_VECTOR, MS_SYMBOL_ELLIPSE, MS_SYMBOL_PIXMAP, MS_SYMBOL_TRUETYPE, MS_SYMBOL_HATCH, MS_SYMBOL_SVG};
 
 #define MS_SYMBOL_ALLOCSIZE 64      /* number of symbolObj ptrs to allocate for a symbolset at once */
-#define MS_MAXVECTORPOINTS 100      /* shade, marker and line symbol parameters */
+#define MS_POINTS_ALLOCSIZE 100      /* shade, marker and line symbol parameters */
+#define MS_MAXVECTORPOINTS 100      /* left in for backwards compatibility with PHP mapscript */
 #define MS_MAXPATTERNLENGTH 10
 
 #define MS_IMAGECACHESIZE 6
@@ -163,7 +164,8 @@ struct symbolObj{
   double minx,miny,maxx,maxy;
 
 #ifndef SWIG
-  pointObj points[MS_MAXVECTORPOINTS];
+  int maxpoints;
+  pointObj *points;
 #endif
 
 #ifdef SWIG

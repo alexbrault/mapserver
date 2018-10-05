@@ -1852,6 +1852,8 @@ int msSLDGetMarkSymbol(mapObj *map, char *pszSymbolName, int bFilled)
     nSymbolId = map->symbolset.numsymbols;
     map->symbolset.numsymbols++;
     initSymbol(psSymbol);
+    if (msGrowSymbol(psSymbol) == MS_FAILURE)
+      return 0;
     psSymbol->inmapfile = MS_TRUE;
     psSymbol->sizex = 1;
     psSymbol->sizey = 1;

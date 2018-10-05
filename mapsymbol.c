@@ -113,6 +113,8 @@ void initSymbol(symbolObj *s)
   s->sizey = 1;
   s->filled = MS_FALSE;
   s->numpoints=0;
+  s->maxpoints = 0;
+  s->points = NULL;
   s->renderer=NULL;
   s->renderer_free_func = NULL;
   s->renderer_cache = NULL;
@@ -152,6 +154,7 @@ int msFreeSymbol(symbolObj *s)
   msFree(s->full_pixmap_path);
   if(s->imagepath) free(s->imagepath);
   if(s->character) free(s->character);
+  if(s->points) free(s->points);
 
   return MS_SUCCESS;
 }
@@ -251,6 +254,7 @@ int loadSymbol(symbolObj *s, char *symbolpath)
               done = MS_TRUE;
               break;
             case(MS_NUMBER):
+              if(msGrowSymbol(s) == MS_FAILURE) return(-1);
               s->points[s->numpoints].x = atof(msyystring_buffer); /* grab the x */
               if(getDouble(&(s->points[s->numpoints].y)) == -1) return(-1); /* grab the y */
               if(s->points[s->numpoints].x!=-99) {
@@ -461,6 +465,9 @@ void msInitSymbolSet(symbolSetObj *symbolset)
     return; /* alloc failed */
   symbolset->symbol[0]->type = MS_SYMBOL_ELLIPSE;
   symbolset->symbol[0]->filled = MS_TRUE;
+
+  if (msGrowSymbol(symbolset->symbol[0]) == MS_FAILURE)
+    return;
   symbolset->symbol[0]->numpoints = 1;
   symbolset->symbol[0]->points[0].x = 1;
   symbolset->symbol[0]->points[0].y = 1;
@@ -525,6 +532,38 @@ symbolObj *msGrowSymbolSet( symbolSetObj *symbolset )
   return symbolset->symbol[symbolset->numsymbols];
 }
 
+
+/*
+** Ensure there is at least one free entry in the points array of this
+** symbolObj. Grow the allocated points[] array if necessary.
+**
+** This function is safe to use for the initial allocation of the points[]
+** array as well (i.e. when maxpoints==0 and points==NULL)
+*/
+int msGrowSymbol(symbolObj *symbol)
+{
+  /* Do we need to increase the array size? */
+  if (symbol->numpoints == symbol->maxpoints) {
+    if (symbol->points == 0) {
+      /* Allocate initial array */
+      symbol->maxpoints += MS_POINTS_ALLOCSIZE;
+      symbol->numpoints = 0;
+      symbol->points = (pointObj*)malloc(symbol->maxpoints*sizeof(pointObj));
+    } else {
+      /* realloc existing array */
+      symbol->maxpoints += MS_POINTS_ALLOCSIZE;
+      symbol->points = (pointObj*)realloc(symbol->points,
+                       symbol->maxpoints*sizeof(pointObj));
+    }
+
+    if (symbol->points == NULL) {
+      msSetError(MS_MEMERR, "Failed to allocate memory for points array.", "msGrowSymbol()");
+      return MS_FAILURE;
+    }
+  }
+
+  return MS_SUCCESS;
+}
 
 
 /* ---------------------------------------------------------------------------
@@ -926,6 +965,9 @@ int msCopySymbol(symbolObj *dst, symbolObj *src, mapObj *map)
   MS_COPYSTELEM(anchorpoint_y);
 
   for (i=0; i < src->numpoints; i++) {
+    if (msGrowSymbol(dst) == MS_FAILURE) {
+      return(MS_FAILURE);
+    }
     MS_COPYPOINT(&(dst->points[i]), &(src->points[i]));
   }
 
